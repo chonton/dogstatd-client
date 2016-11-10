@@ -9,6 +9,7 @@ import java.net.ProtocolFamily;
 import java.net.StandardProtocolFamily;
 import java.net.StandardSocketOptions;
 import java.nio.BufferOverflowException;
+import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.channels.DatagramChannel;
 import java.nio.channels.UnsupportedAddressTypeException;
@@ -30,6 +31,7 @@ public class Sender {
   private final CharBuffer chars = CharBuffer.allocate(1400);
   private final DatagramChannel clientChannel;
   private final BlockingQueue<Message> queue;
+  private final Thread thread;
 
   /**
    * Create a sender which sends to a DogStatD on port 8125 at the specified 
@@ -67,9 +69,9 @@ public class Sender {
     clientChannel = DatagramChannel.open(getProtocol(socket.getAddress()));
     clientChannel.configureBlocking(false);
     clientChannel.setOption(StandardSocketOptions.SO_SNDBUF, MTU);
-    clientChannel.bind(socket);
+    clientChannel.connect(socket);
 
-    new Thread("dogstatd") {
+    thread = new Thread("dogstatd") {
       {
         setDaemon(true);
         start();
@@ -102,11 +104,14 @@ public class Sender {
    * Send message to collector daemon.
    * 
    * @param message The message to send.
+   * @return 
    */
-  public void send(Message message) {
-    if (!queue.offer(message)) {
+  public boolean send(Message message) {
+    boolean success = queue.offer(message);
+    if (!success) {
       log.info("dropped message {}", message);
     }
+    return success;
   }
 
   private void pump() throws InterruptedException {
@@ -124,10 +129,17 @@ public class Sender {
         continue;
       }
       try {
-        clientChannel.write(StandardCharsets.UTF_8.encode(chars));
+        chars.flip();
+        ByteBuffer bytes = StandardCharsets.UTF_8.encode(chars);
+        clientChannel.write(bytes);
       } catch (IOException ignore) {
         log.warn("failed to send {}", chars.toString());
       }
     }
+  }
+
+  void shutdown(long ms) throws InterruptedException {
+    thread.interrupt();
+    thread.join(ms);
   }
 }

@@ -41,8 +41,19 @@ public class ServiceCheckTest {
     Assert.assertEquals("_sc|name|3\n", chars.flip().toString());
   }
 
+  @Test(expected = NullPointerException.class)
+  public void testNameNull() {
+    new ServiceCheck(null, ServiceCheck.Status.WARNING);
+  }
+
+  @Test(expected = NullPointerException.class)
+  public void testStatusNull() {
+    new ServiceCheck("name", null);
+  }
+
   @Test
   public void testInvalid() {
+    Assert.assertFalse(new ServiceCheck("μ", ServiceCheck.Status.WARNING).validate());
     Assert.assertFalse(new ServiceCheck("name", ServiceCheck.Status.UNKNOWN, "Tag2:value2").validate());
     Assert.assertFalse(new ServiceCheck("name", ServiceCheck.Status.UNKNOWN).setHost("").validate());
   }

@@ -50,6 +50,16 @@ public class EventTest {
     Assert.assertEquals("_e{1,1}:t|t|t:error\n", chars.flip().toString());
   }
 
+  @Test(expected = NullPointerException.class)
+  public void testTitleNull() {
+    new Event(null, "text");
+  }
+
+  @Test(expected = NullPointerException.class)
+  public void testTextNull() {
+    new Event("title", null);
+  }
+
   @Test
   public void testInvalid() {
     Assert.assertFalse(new Event("title", "text", "Tag2:value2").validate());
