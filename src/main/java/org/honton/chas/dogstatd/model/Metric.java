@@ -3,6 +3,7 @@ package org.honton.chas.dogstatd.model;
 import java.nio.CharBuffer;
 
 import lombok.NonNull;
+import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -19,6 +20,7 @@ import lombok.extern.slf4j.Slf4j;
  * </ul>
  */
 @Slf4j
+@ToString
 class Metric<T> implements Message {
   private final String name;
   protected final T value;

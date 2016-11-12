@@ -4,6 +4,7 @@ import java.nio.CharBuffer;
 
 import lombok.NonNull;
 import lombok.Setter;
+import lombok.ToString;
 import lombok.experimental.Accessors;
 import lombok.extern.slf4j.Slf4j;
 
@@ -12,6 +13,8 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Accessors(chain = true)
 @Slf4j
+@ToString
+@Setter
 public class ServiceCheck implements Message {
   public enum Status {
     OK, WARNING, CRITICAL, UNKNOWN
@@ -20,11 +23,8 @@ public class ServiceCheck implements Message {
   private final String name;
   private final Status value;
   private final String[] tags;
-  @Setter
   private Long timestamp;
-  @Setter
   private String host;
-  @Setter
   private String message;
 
   /**

@@ -4,6 +4,7 @@ import java.nio.CharBuffer;
 
 import lombok.NonNull;
 import lombok.Setter;
+import lombok.ToString;
 import lombok.experimental.Accessors;
 import lombok.extern.slf4j.Slf4j;
 
@@ -11,6 +12,8 @@ import lombok.extern.slf4j.Slf4j;
  * Event is message with title, text, and metadata.
  */
 @Slf4j
+@Setter
+@ToString
 @Accessors(chain = true)
 public class Event implements Message {
 
@@ -25,17 +28,11 @@ public class Event implements Message {
   private final String title;
   private final String text;
   private final String[] tags;
-  @Setter
   private Long timestamp;
-  @Setter
   private String host;
-  @Setter
   private String key;
-  @Setter
   private Priority priority;
-  @Setter
   private String source;
-  @Setter
   private Alert alert;
   
   /**

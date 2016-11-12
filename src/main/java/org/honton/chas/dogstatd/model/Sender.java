@@ -14,8 +14,7 @@ import java.nio.CharBuffer;
 import java.nio.channels.DatagramChannel;
 import java.nio.channels.UnsupportedAddressTypeException;
 import java.nio.charset.StandardCharsets;
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.TimeUnit;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -28,16 +27,16 @@ public class Sender {
 
   private static final int MTU = 1440;
 
-  private final CharBuffer chars = CharBuffer.allocate(1400);
+  private static final long ONE_MINUTE = TimeUnit.MINUTES.toMillis(1);
+
   private final DatagramChannel clientChannel;
-  private final BlockingQueue<Message> queue;
-  private final Thread thread;
+  private volatile long throttleEnd;
+  private long throttleInterval;
 
   /**
    * Create a sender which sends to a DogStatD on port 8125 at the specified 
-   * address.  A maximum of 1000 messages will be queued before dropping any
-   * incoming messages.
-   * 
+   * address.
+   *
    * @param address The address to send to.
    * @throws IOException
    */
@@ -47,47 +46,37 @@ public class Sender {
 
   /**
    * Create a sender which sends to a DogStatD on port 8125 at the specified 
-   * address. A maximum of 1000 messages will be queued before dropping any
-   * incoming messages.
-   * 
+   * address.
+   *
    * @param address The address to send to.
    * @throws IOException
    */
   public Sender(InetAddress address) throws IOException {
-    this(new InetSocketAddress(address, 8125), 1000);
+    this(new InetSocketAddress(address, 8125));
   }
 
   /**
    * Create a sender which sends to a DogStatD on the specified port and address.
-   * 
+   *
    * @param socket The address and port to send to.
-   * @param queueSize The maximum unsent messages before dropping messages.
    * @throws IOException
    */
-  public Sender(InetSocketAddress socket, int maxUnsentMessages) throws IOException {
-    queue = new ArrayBlockingQueue<>(maxUnsentMessages);
+  public Sender(InetSocketAddress socket) throws IOException {
+    this(socket, ONE_MINUTE);
+  }
+
+  /**
+   * Create a sender which sends to a DogStatD on the specified port and address.
+   *
+   * @param socket The address and port to send to.
+   * @throws IOException
+   */
+  public Sender(InetSocketAddress socket, long throttleInterval) throws IOException {
     clientChannel = DatagramChannel.open(getProtocol(socket.getAddress()));
     clientChannel.configureBlocking(false);
     clientChannel.setOption(StandardSocketOptions.SO_SNDBUF, MTU);
     clientChannel.connect(socket);
-
-    thread = new Thread("dogstatd") {
-      {
-        setDaemon(true);
-        start();
-      }
-
-      @Override
-      public void run() {
-        try {
-          pump();
-        } catch (InterruptedException ie) {
-          log.info("interrupt shut down dogstatd pump");
-          return;
-        }
-        log.error("Unexpected RuntimeException shut down dogstatd pump");
-      }
-    };
+    this.throttleInterval = throttleInterval;
   }
 
   private ProtocolFamily getProtocol(InetAddress host) {
@@ -102,44 +91,50 @@ public class Sender {
 
   /**
    * Send message to collector daemon.
-   * 
+   *
    * @param message The message to send.
-   * @return 
+   * @return true, if message is valid and successfully queued for delivery
    */
   public boolean send(Message message) {
-    boolean success = queue.offer(message);
-    if (!success) {
-      log.info("dropped message {}", message);
+    if (throttleEnd != 0) {
+      if (System.currentTimeMillis() < throttleEnd) {
+        return false;
+      }
+      throttleEnd = 0;
     }
-    return success;
+
+    if (!message.validate()) {
+      return false;
+    }
+
+    CharBuffer chars = CharBuffer.allocate(1400);
+    chars.clear();
+    try {
+      message.format(chars);
+    }
+    catch(BufferOverflowException boe) {
+      log.info("too large of message {}", message);
+      return false;
+    }
+
+    chars.flip();
+    ByteBuffer bytes = StandardCharsets.UTF_8.encode(chars);
+
+    try {
+      clientChannel.write(bytes);
+      return true;
+    } catch (IOException pue) {
+      throttleEnd = System.currentTimeMillis() + throttleInterval;
+    }
+    log.warn("failed to send message {}", message);
+    return false;
   }
 
-  private void pump() throws InterruptedException {
-    for (;;) {
-      Message message = queue.take();
-      if (!message.validate()) {
-        continue;
-      }
-      chars.clear();
-      try {
-        message.format(chars);
-      }
-      catch(BufferOverflowException boe) {
-        log.info("too large of message {}", message);
-        continue;
-      }
-      try {
-        chars.flip();
-        ByteBuffer bytes = StandardCharsets.UTF_8.encode(chars);
-        clientChannel.write(bytes);
-      } catch (IOException ignore) {
-        log.warn("failed to send {}", chars.toString());
-      }
-    }
+  void shutdown() throws IOException {
+    clientChannel.close();
   }
 
-  void shutdown(long ms) throws InterruptedException {
-    thread.interrupt();
-    thread.join(ms);
+  boolean isThrottled() {
+    return throttleEnd != 0;
   }
 }

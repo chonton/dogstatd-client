@@ -16,7 +16,7 @@ import org.junit.Test;
 import lombok.SneakyThrows;
 
 public class SenderTest {
-  
+
   static class UdpThread extends Thread {
 
     private final CompletableFuture<String> future = new CompletableFuture<>();
@@ -63,7 +63,7 @@ public class SenderTest {
       Assert.assertEquals("_e{5,4}:title|text\n", receiver.getResult());
     }
     finally {
-      sender.shutdown(100);
+      sender.shutdown();
     }
   }
 
@@ -72,7 +72,7 @@ public class SenderTest {
     InetSocketAddress socket = new InetSocketAddress(InetAddress.getLocalHost(), 8125);
     UdpThread receiver = new UdpThread(socket);
 
-    Sender sender = new Sender(socket, 4);
+    Sender sender = new Sender(socket);
     try {
       // try invalid message
       sender.send(new Event("", ""));
@@ -83,21 +83,24 @@ public class SenderTest {
       Assert.assertEquals("_e{5,4}:title|text\n", receiver.getResult());
     }
     finally {
-      sender.shutdown(100);
+      sender.shutdown();
     }
   }
 
   @Test
-  public void testBufferOverflow() throws Exception {
+  public void testNoListener() throws Exception {
     InetSocketAddress socket = new InetSocketAddress(InetAddress.getLocalHost(), 8125);
 
-    Event badEvent = new Event("title", CharBuffer.allocate(2000).toString().replace('\0', 't'));
-    Sender sender = new Sender(socket, 1);
-    try {
-      while(sender.send(badEvent)) {}
-    }
-    finally {
-      sender.shutdown(100);
-    }
+    Sender sender = new Sender(socket, TimeUnit.SECONDS.toMillis(1));
+    Assert.assertTrue(sender.send(new Event("title", "text")));
+    Assert.assertFalse(sender.isThrottled());
+    Assert.assertFalse(sender.send(new ServiceCheck("title", ServiceCheck.Status.CRITICAL)));
+    Assert.assertTrue(sender.isThrottled());
+    Assert.assertFalse(sender.send(new Set("name", "value")));
+
+    Thread.sleep(TimeUnit.SECONDS.toMillis(2));
+    Assert.assertTrue(sender.send(new Gauge("fuel", 75.0)));
+    Assert.assertFalse(sender.isThrottled());
+    Assert.assertFalse(sender.send(new Set("name", "value")));
   }
 }
