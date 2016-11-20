@@ -39,7 +39,6 @@ public class Sender {
    * address.
    *
    * @param address The address to send to.
-   * @throws IOException
    */
   public Sender(String address) {
     this(getAddress(address));
@@ -59,7 +58,6 @@ public class Sender {
    * address.
    *
    * @param address The address to send to.
-   * @throws IOException
    */
   public Sender(InetAddress address) {
     this(new InetSocketAddress(address, 8125));
@@ -69,7 +67,6 @@ public class Sender {
    * Create a sender which sends to a DogStatD on the specified port and address.
    *
    * @param socket The address and port to send to.
-   * @throws IOException
    */
   public Sender(InetSocketAddress socket) {
     this(socket, ONE_MINUTE);
@@ -79,7 +76,6 @@ public class Sender {
    * Create a sender which sends to a DogStatD on the specified port and address.
    *
    * @param socket The address and port to send to.
-   * @throws IOException
    */
   @SneakyThrows
   public Sender(InetSocketAddress socket, long throttleInterval) {

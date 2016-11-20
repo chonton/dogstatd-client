@@ -35,7 +35,7 @@ public final class Validator {
   /**
    * Validate a String tag.
    * 
-   * @param String tag The String tag to validate.
+   * @param tag The String tag to validate.
    * @return true, if the tag is 1 to 200 characters long and starts with a lowercase ASCII letter,
    *         and contains only lowercase ASCII alphanumerics, underscores, minuses, colons, periods
    *         and slashes.
@@ -47,7 +47,7 @@ public final class Validator {
   /**
    * Validate a String value.
    * 
-   * @param String value The value to validate.
+   * @param value The value to validate.
    * @return true, if value is not empty and does not have any pipe ('|') or control characters
    */
   public static boolean fieldIsValid(String value) {
