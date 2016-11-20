@@ -4,7 +4,7 @@
 
   <groupId>org.honton.chas</groupId>
   <artifactId>dogstatd-client</artifactId>
-  <version>0.0.1-SNAPSHOT</version>
+  <version>0.0.1</version>
 
   <name>Test Pojos Maven Plugin</name>
 
@@ -31,7 +31,7 @@
   <scm>
     <connection>scm:git:git://github.com/chonton/dogstatd-client</connection>
     <developerConnection>scm:git:git@github.com:chonton/dogstatd-client</developerConnection>
-    <url>https://github.com/chonton/dogstad-client</url>
+    <url>https://github.com/chonton/dogstatd-client</url>
   </scm>
 
   <distributionManagement>
@@ -49,12 +49,19 @@
   </distributionManagement>
 
   <properties>
-    <maven.compiler.source>1.8</maven.compiler.source>
-    <maven.compiler.target>1.8</maven.compiler.target>
+    <maven.compiler.source>1.7</maven.compiler.source>
+    <maven.compiler.target>1.7</maven.compiler.target>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
 
   <dependencies>
+
+    <dependency>
+      <groupId>ch.qos.logback</groupId>
+      <artifactId>logback-classic</artifactId>
+      <version>1.1.7</version>
+      <scope>test</scope>
+    </dependency>
 
     <dependency>
       <groupId>junit</groupId>
@@ -71,16 +78,10 @@
     </dependency>
 
     <dependency>
-		    <groupId>org.slf4j</groupId>
-		    <artifactId>slf4j-api</artifactId>
-		    <version>1.7.21</version>
-		</dependency>
-		
-		<dependency>
-		    <groupId>ch.qos.logback</groupId>
-		    <artifactId>logback-classic</artifactId>
-		    <version>1.1.7</version>
-		</dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-api</artifactId>
+      <version>1.7.21</version>
+    </dependency>
 
   </dependencies>
 
@@ -105,10 +106,10 @@
           </execution>
           <execution>
             <id>default-report</id>
-            <phase>prepare-package</phase>
             <goals>
               <goal>report</goal>
             </goals>
+            <phase>prepare-package</phase>
           </execution>
           <execution>
             <id>default-check</id>

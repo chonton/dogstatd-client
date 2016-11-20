@@ -16,6 +16,7 @@ import java.nio.channels.UnsupportedAddressTypeException;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.TimeUnit;
 
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -40,8 +41,17 @@ public class Sender {
    * @param address The address to send to.
    * @throws IOException
    */
-  public Sender(String address) throws IOException {
-    this(InetAddress.getByName(address));
+  public Sender(String address) {
+    this(getAddress(address));
+  }
+
+  @SneakyThrows
+  private static InetAddress getAddress(String address) {
+    return InetAddress.getByName(address);
+  }
+
+  public Sender() {
+    this(InetAddress.getLoopbackAddress());
   }
 
   /**
@@ -51,7 +61,7 @@ public class Sender {
    * @param address The address to send to.
    * @throws IOException
    */
-  public Sender(InetAddress address) throws IOException {
+  public Sender(InetAddress address) {
     this(new InetSocketAddress(address, 8125));
   }
 
@@ -61,7 +71,7 @@ public class Sender {
    * @param socket The address and port to send to.
    * @throws IOException
    */
-  public Sender(InetSocketAddress socket) throws IOException {
+  public Sender(InetSocketAddress socket) {
     this(socket, ONE_MINUTE);
   }
 
@@ -71,7 +81,8 @@ public class Sender {
    * @param socket The address and port to send to.
    * @throws IOException
    */
-  public Sender(InetSocketAddress socket, long throttleInterval) throws IOException {
+  @SneakyThrows
+  public Sender(InetSocketAddress socket, long throttleInterval) {
     clientChannel = DatagramChannel.open(getProtocol(socket.getAddress()));
     clientChannel.configureBlocking(false);
     clientChannel.setOption(StandardSocketOptions.SO_SNDBUF, MTU);
