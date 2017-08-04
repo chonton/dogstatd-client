@@ -20,7 +20,7 @@ To include dogstatd-client in your maven build, use the following fragment in yo
       <plugin>
         <groupId>org.honton.chas</groupId>
         <artifactId>dogstatd-client</artifactId>
-        <version>0.0.1-SNAPSHOT</version>
+        <version>0.0.2</version>
       </plugin>
     </plugins>
   </build>
@@ -30,12 +30,17 @@ To include dogstatd-client in your maven build, use the following fragment in yo
 
 ### In setup code
 ```java
-
+  // you only need a single instance, Sender is thread safe and send method does not block caller
   static public final Sender METRICS = new Sender();
-
 ```
 
-### In mainline code
+### Sending some example metrics
 ```java
-        METRICS.send(new Gauge("round", i, tag));
+  METRICS.send(new Histogram("histogram.name", latency);
+  
+  METRICS.send(new Gauge("round", i, tag));
+  
+  METRICS.send(new Counter("pi", 3.14));
+  
+  METRICS.send(new Event("title", "message", "tag1", "tag2"));
 ```
