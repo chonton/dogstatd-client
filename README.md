@@ -15,15 +15,11 @@ A java client to push UDP messages to a local [dogstatd](http://docs.datadoghq.c
 ## Use with Maven
 To include dogstatd-client in your maven build, use the following fragment in your pom.
 ```xml
-  <build>
-    <plugins>
-      <plugin>
+      <dependency>
         <groupId>org.honton.chas</groupId>
         <artifactId>dogstatd-client</artifactId>
         <version>0.0.2</version>
-      </plugin>
-    </plugins>
-  </build>
+      </dependency>
 ```
 
 ## Typical Java Use
