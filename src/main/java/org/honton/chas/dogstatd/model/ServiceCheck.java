@@ -40,6 +40,15 @@ public class ServiceCheck implements Message {
     this.tags = tags;
   }
 
+  /**
+   * Validate the message to be sent.
+   * <ul>
+   * <li>Use {@link Validator#nameIsValid(String)} to validate the metric name.</li>
+   * <li>If host is set, use {@link Validator#fieldIsValid(String)} to validate the host.</li>
+   * <li>Use {@link Validator#tagIsValid(String)} to validate each tag.</li>
+   * </ul>
+   * @return true, if the message is valid and should be sent.
+   */
   @Override
   public boolean validate() {
     if (!Validator.nameIsValid(name)) {

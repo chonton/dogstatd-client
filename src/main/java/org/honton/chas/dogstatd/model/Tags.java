@@ -12,7 +12,7 @@ public final class Tags {
   private Tags() {}
 
   /**
-   * Validate an array of tags
+   * Validate an array of tags.  Uses {@link Validator#tagIsValid(String)} to validate each tag.
    * @param log The logger to inform of invalid tags
    * @param tags The tags to validate
    * @return true, if all tags are valid

@@ -1,6 +1,9 @@
 # dogstatd-client
 A java client to push UDP messages to a local [dogstatd](http://docs.datadoghq.com/guides/dogstatsd/).
 
+[Javadoc](https://chonton.github.io/dogstatd-client/0.0.2/apidocs/) and
+[build reports](https://chonton.github.io/dogstatd-client/0.0.2/project-reports) are available.
+
 ### Requirements
 * Minimal latency in the mainline processing
 * Some, but not extreme buffering of outgoing messages
