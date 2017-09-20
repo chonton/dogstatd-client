@@ -48,59 +48,70 @@ public class Event implements Message {
 <span class="fc" id="L48">    this.tags = tags;</span>
 <span class="fc" id="L49">  }</span>
 
-  @Override
-  public boolean validate() {
-<span class="fc bfc" id="L53" title="All 2 branches covered.">    if(title.isEmpty()) {</span>
-<span class="fc" id="L54">      log.warn(&quot;title should be non-empty&quot;);</span>
-<span class="fc" id="L55">      return false;</span>
+  /**
+   * Validate the message to be sent.
+<span class="fc bfc" id="L53" title="All 2 branches covered.">   * &lt;ul&gt;</span>
+<span class="fc" id="L54">   * &lt;li&gt;Use {@link Validator#nameIsValid(String)} to validate the metric name.&lt;/li&gt;</span>
+<span class="fc" id="L55">   * &lt;li&gt;If host is set, use {@link Validator#fieldIsValid(String)} to validate the host.&lt;/li&gt;</span>
+   * &lt;li&gt;If key is set, use {@link Validator#fieldIsValid(String)} to validate the key.&lt;/li&gt;
+<span class="pc bpc" id="L57" title="1 of 4 branches missed.">   * &lt;li&gt;If source is set, use {@link Validator#fieldIsValid(String)} to validate the source.&lt;/li&gt;</span>
+<span class="fc" id="L58">   * &lt;li&gt;Use {@link Validator#tagIsValid(String)} to validate each tag.&lt;/li&gt;</span>
+<span class="fc" id="L59">   * &lt;/ul&gt;</span>
+   * @return true, if the message is valid and should be sent.
+<span class="pc bpc" id="L61" title="1 of 4 branches missed.">   */</span>
+<span class="fc" id="L62">  @Override</span>
+<span class="fc" id="L63">  public boolean validate() {</span>
+    if(title.isEmpty()) {
+<span class="pc bpc" id="L65" title="1 of 4 branches missed.">      log.warn(&quot;title should be non-empty&quot;);</span>
+<span class="fc" id="L66">      return false;</span>
+<span class="fc" id="L67">    }</span>
+    if (host != null &amp;&amp; !Validator.fieldIsValid(host)) {
+<span class="fc" id="L69">      log.warn(&quot;host contains control characters or is empty&quot;);</span>
+      return false;
     }
-<span class="pc bpc" id="L57" title="1 of 4 branches missed.">    if (host != null &amp;&amp; !Validator.fieldIsValid(host)) {</span>
-<span class="fc" id="L58">      log.warn(&quot;host contains control characters or is empty&quot;);</span>
-<span class="fc" id="L59">      return false;</span>
-    }
-<span class="pc bpc" id="L61" title="1 of 4 branches missed.">    if (key != null &amp;&amp; !Validator.fieldIsValid(key)) {</span>
-<span class="fc" id="L62">      log.warn(&quot;key contains control characters or is empty&quot;);</span>
-<span class="fc" id="L63">      return false;</span>
-    }
-<span class="pc bpc" id="L65" title="1 of 4 branches missed.">    if (source != null &amp;&amp; !Validator.fieldIsValid(source)) {</span>
-<span class="fc" id="L66">      log.warn(&quot;source contains control characters or is empty&quot;);</span>
-<span class="fc" id="L67">      return false;</span>
-    }
-<span class="fc" id="L69">    return Tags.validate(log, tags);</span>
+    if (key != null &amp;&amp; !Validator.fieldIsValid(key)) {
+      log.warn(&quot;key contains control characters or is empty&quot;);
+<span class="fc" id="L74">      return false;</span>
+<span class="fc" id="L75">    }</span>
+<span class="fc" id="L76">    if (source != null &amp;&amp; !Validator.fieldIsValid(source)) {</span>
+      log.warn(&quot;source contains control characters or is empty&quot;);
+<span class="fc bfc" id="L78" title="All 2 branches covered.">      return false;</span>
+<span class="fc" id="L79">    }</span>
+    return Tags.validate(log, tags);
   }
-
-  @Override
+<span class="fc bfc" id="L82" title="All 2 branches covered."></span>
+<span class="fc" id="L83">  @Override</span>
   public void format(CharBuffer chars) {
-<span class="fc" id="L74">    chars.append(&quot;_e{&quot;).append(Integer.toString(title.length())).append(',')</span>
-<span class="fc" id="L75">        .append(Integer.toString(text.length())).append(&quot;}:&quot;).append(title).append('|')</span>
-<span class="fc" id="L76">        .append(text);</span>
+    chars.append(&quot;_e{&quot;).append(Integer.toString(title.length())).append(',')
+<span class="fc bfc" id="L86" title="All 2 branches covered.">        .append(Integer.toString(text.length())).append(&quot;}:&quot;).append(title).append('|')</span>
+<span class="fc" id="L87">        .append(text);</span>
 
-<span class="fc bfc" id="L78" title="All 2 branches covered.">    if (timestamp != null) {</span>
-<span class="fc" id="L79">      chars.append(&quot;|d:&quot;).append(timestamp.toString());</span>
+    if (timestamp != null) {
+<span class="fc bfc" id="L90" title="All 2 branches covered.">      chars.append(&quot;|d:&quot;).append(timestamp.toString());</span>
+<span class="fc" id="L91">    }</span>
+
+    if (host != null) {
+<span class="fc bfc" id="L94" title="All 2 branches covered.">      chars.append(&quot;|h:&quot;).append(host);</span>
+<span class="fc" id="L95">    }</span>
+
+    if (key != null) {
+<span class="fc bfc" id="L98" title="All 2 branches covered.">      chars.append(&quot;|k:&quot;).append(key);</span>
+<span class="fc" id="L99">    }</span>
+
+    if (priority != null) {
+<span class="fc" id="L102">      chars.append(&quot;|p:&quot;).append(priority.name());</span>
+<span class="fc" id="L103">    }</span>
+<span class="fc" id="L104"></span>
+    if (source != null) {
+      chars.append(&quot;|s:&quot;).append(source);
     }
 
-<span class="fc bfc" id="L82" title="All 2 branches covered.">    if (host != null) {</span>
-<span class="fc" id="L83">      chars.append(&quot;|h:&quot;).append(host);</span>
+    if (alert != null) {
+      chars.append(&quot;|t:&quot;).append(alert.name());
     }
 
-<span class="fc bfc" id="L86" title="All 2 branches covered.">    if (key != null) {</span>
-<span class="fc" id="L87">      chars.append(&quot;|k:&quot;).append(key);</span>
-    }
-
-<span class="fc bfc" id="L90" title="All 2 branches covered.">    if (priority != null) {</span>
-<span class="fc" id="L91">      chars.append(&quot;|p:&quot;).append(priority.name());</span>
-    }
-
-<span class="fc bfc" id="L94" title="All 2 branches covered.">    if (source != null) {</span>
-<span class="fc" id="L95">      chars.append(&quot;|s:&quot;).append(source);</span>
-    }
-
-<span class="fc bfc" id="L98" title="All 2 branches covered.">    if (alert != null) {</span>
-<span class="fc" id="L99">      chars.append(&quot;|t:&quot;).append(alert.name());</span>
-    }
-
-<span class="fc" id="L102">    Tags.format(chars, tags);</span>
-<span class="fc" id="L103">    chars.append('\n');</span>
-<span class="fc" id="L104">  }</span>
+    Tags.format(chars, tags);
+    chars.append('\n');
+  }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.7.201606060606</span></div></body></html>
