@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ServiceCheck.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Dogstat Daemon Client</a> &gt; <a href="index.source.html" class="el_package">org.honton.chas.dogstatd.model</a> &gt; <span class="el_source">ServiceCheck.java</span></div><h1>ServiceCheck.java</h1><pre class="source lang-java linenums">package org.honton.chas.dogstatd.model;
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ServiceCheck.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Dogstatd Client</a> &gt; <a href="index.source.html" class="el_package">org.honton.chas.dogstatd.model</a> &gt; <span class="el_source">ServiceCheck.java</span></div><h1>ServiceCheck.java</h1><pre class="source lang-java linenums">package org.honton.chas.dogstatd.model;
 
 import java.nio.CharBuffer;
 
@@ -42,45 +42,45 @@ public class ServiceCheck implements Message {
 
   /**
    * Validate the message to be sent.
-<span class="fc bfc" id="L45" title="All 2 branches covered.">   * &lt;ul&gt;</span>
-<span class="fc" id="L46">   * &lt;li&gt;Use {@link Validator#nameIsValid(String)} to validate the metric name.&lt;/li&gt;</span>
-<span class="fc" id="L47">   * &lt;li&gt;If host is set, use {@link Validator#fieldIsValid(String)} to validate the host.&lt;/li&gt;</span>
+   * &lt;ul&gt;
+   * &lt;li&gt;Use {@link Validator#nameIsValid(String)} to validate the metric name.&lt;/li&gt;
+   * &lt;li&gt;If host is set, use {@link Validator#fieldIsValid(String)} to validate the host.&lt;/li&gt;
    * &lt;li&gt;Use {@link Validator#tagIsValid(String)} to validate each tag.&lt;/li&gt;
-<span class="pc bpc" id="L49" title="1 of 4 branches missed.">   * &lt;/ul&gt;</span>
-<span class="fc" id="L50">   * @return true, if the message is valid and should be sent.</span>
-<span class="fc" id="L51">   */</span>
+   * &lt;/ul&gt;
+   * @return true, if the message is valid and should be sent.
+   */
   @Override
-<span class="fc" id="L53">  public boolean validate() {</span>
-    if (!Validator.nameIsValid(name)) {
-      log.warn(&quot;invalid name '{}'&quot;, name);
-      return false;
+  public boolean validate() {
+<span class="fc bfc" id="L54" title="All 2 branches covered.">    if (!Validator.nameIsValid(name)) {</span>
+<span class="fc" id="L55">      log.warn(&quot;invalid name '{}'&quot;, name);</span>
+<span class="fc" id="L56">      return false;</span>
     }
-<span class="fc" id="L58">    if (host != null &amp;&amp; !Validator.fieldIsValid(host)) {</span>
+<span class="pc bpc" id="L58" title="1 of 4 branches missed.">    if (host != null &amp;&amp; !Validator.fieldIsValid(host)) {</span>
 <span class="fc" id="L59">      log.warn(&quot;host contains control characters or is empty&quot;);</span>
-      return false;
-<span class="fc bfc" id="L61" title="All 2 branches covered.">    }</span>
+<span class="fc" id="L60">      return false;</span>
+    }
 <span class="fc" id="L62">    return Tags.validate(log, tags);</span>
   }
 
-<span class="fc bfc" id="L65" title="All 2 branches covered.">  // _sc|name|status|metadata</span>
-<span class="fc" id="L66">  public void format(CharBuffer chars) {</span>
-    chars.append(&quot;_sc|&quot;).append(name)
-        .append('|').append(Integer.toString(value.ordinal()));
-<span class="fc" id="L69"></span>
-    if (timestamp != null) {
-<span class="fc bfc" id="L71" title="All 2 branches covered.">      chars.append(&quot;|d:&quot;).append(timestamp.toString());</span>
-<span class="fc" id="L72">    }</span>
+  // _sc|name|status|metadata
+  public void format(CharBuffer chars) {
+<span class="fc" id="L67">    chars.append(&quot;_sc|&quot;).append(name)</span>
+<span class="fc" id="L68">        .append('|').append(Integer.toString(value.ordinal()));</span>
 
-<span class="fc" id="L74">    if (host != null) {</span>
+<span class="fc bfc" id="L70" title="All 2 branches covered.">    if (timestamp != null) {</span>
+<span class="fc" id="L71">      chars.append(&quot;|d:&quot;).append(timestamp.toString());</span>
+    }
+
+<span class="fc bfc" id="L74" title="All 2 branches covered.">    if (host != null) {</span>
 <span class="fc" id="L75">      chars.append(&quot;|h:&quot;).append(host);</span>
     }
 
-    Tags.format(chars, tags);
+<span class="fc" id="L78">    Tags.format(chars, tags);</span>
 
-    if (message != null) {
-      chars.append(&quot;|m:&quot;).append(message);
+<span class="fc bfc" id="L80" title="All 2 branches covered.">    if (message != null) {</span>
+<span class="fc" id="L81">      chars.append(&quot;|m:&quot;).append(message);</span>
     }
-    chars.append('\n');
-  }
+<span class="fc" id="L83">    chars.append('\n');</span>
+<span class="fc" id="L84">  }</span>
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.7.201606060606</span></div></body></html>
