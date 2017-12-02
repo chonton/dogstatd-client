@@ -22,6 +22,8 @@ import lombok.extern.slf4j.Slf4j;
 /**
  * Send formatted UDP messages to a DogStatD. 
  * Messages are added to a queue and sent in a background thread.
+ * If message cannot be sent to local DogStatD agent, drop any additional messages within the
+ * throttleInterval.
  */
 @Slf4j
 public class Sender {
@@ -35,8 +37,16 @@ public class Sender {
   private long throttleInterval;
 
   /**
+   * Create a sender which sends to a DogStatD on port 8125 at the local loopback
+   * address.  ThrottleInterval is one minute.
+   */
+  public Sender() {
+    this(InetAddress.getLoopbackAddress());
+  }
+
+  /**
    * Create a sender which sends to a DogStatD on port 8125 at the specified 
-   * address.
+   * address.  ThrottleInterval is one minute.
    *
    * @param address The address to send to.
    */
@@ -49,13 +59,9 @@ public class Sender {
     return InetAddress.getByName(address);
   }
 
-  public Sender() {
-    this(InetAddress.getLoopbackAddress());
-  }
-
   /**
    * Create a sender which sends to a DogStatD on port 8125 at the specified 
-   * address.
+   * address.  ThrottleInterval is one minute.
    *
    * @param address The address to send to.
    */
@@ -65,7 +71,7 @@ public class Sender {
 
   /**
    * Create a sender which sends to a DogStatD on the specified port and address.
-   *
+   * ThrottleInterval is one minute.
    * @param socket The address and port to send to.
    */
   public Sender(InetSocketAddress socket) {
@@ -74,8 +80,12 @@ public class Sender {
 
   /**
    * Create a sender which sends to a DogStatD on the specified port and address.
+   * ThrottleInterval is specified in milliseconds.  If a message fails to be sent to the
+   * local agent, any messages during the throttleInterval will be dropped.  Additional
+   * messages will be attempted once the throttleInterval has expired.
    *
    * @param socket The address and port to send to.
+   * @param throttleInterval The number of milliseconds to ignore messages.
    */
   @SneakyThrows
   public Sender(InetSocketAddress socket, long throttleInterval) {
@@ -97,10 +107,13 @@ public class Sender {
   }
 
   /**
-   * Send message to collector daemon.
+   * Send message to collector daemon.  Messages are checked for validity and will be dropped if too
+   * large or contain invalid values.  Message will also be dropped if this method is invoked within
+   * the throttleInterval.
    *
    * @param message The message to send.
-   * @return true, if message is valid and successfully queued for delivery
+   * @return true, if message is valid and successfully queued for delivery; false, if message not
+   * sent due to improper message formatting, delivery failure, or the throttleInterval is still active.
    */
   public boolean send(Message message) {
     if (throttleEnd != 0) {
