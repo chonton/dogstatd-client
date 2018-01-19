@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Sender.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Dogstatd Client</a> &gt; <a href="index.source.html" class="el_package">org.honton.chas.dogstatd.model</a> &gt; <span class="el_source">Sender.java</span></div><h1>Sender.java</h1><pre class="source lang-java linenums">package org.honton.chas.dogstatd.model;
+
+import java.io.IOException;
+import java.net.Inet4Address;
+import java.net.Inet6Address;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.net.ProtocolFamily;
+import java.net.StandardProtocolFamily;
+import java.net.StandardSocketOptions;
+import java.nio.BufferOverflowException;
+import java.nio.ByteBuffer;
+import java.nio.CharBuffer;
+import java.nio.channels.DatagramChannel;
+import java.nio.channels.UnsupportedAddressTypeException;
+import java.nio.charset.StandardCharsets;
+import java.util.concurrent.TimeUnit;
+
+import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
+
+/**
+ * Send formatted UDP messages to a DogStatD. 
+ * Messages are added to a queue and sent in a background thread.
+ * If message cannot be sent to local DogStatD agent, drop any additional messages within the
+ * throttleInterval.
+ */
+<span class="fc" id="L28">@Slf4j</span>
+public class Sender {
+
+  private static final int MTU = 1440;
+
+<span class="fc" id="L33">  private static final long ONE_MINUTE = TimeUnit.MINUTES.toMillis(1);</span>
+
+  private final DatagramChannel clientChannel;
+  private volatile long throttleEnd;
+  private long throttleInterval;
+
+  /**
+   * Create a sender which sends to a DogStatD on port 8125 at the local loopback
+   * address.  ThrottleInterval is one minute.
+   */
+  public Sender() {
+<span class="nc" id="L44">    this(InetAddress.getLoopbackAddress());</span>
+<span class="nc" id="L45">  }</span>
+
+  /**
+   * Create a sender which sends to a DogStatD on port 8125 at the specified 
+   * address.  ThrottleInterval is one minute.
+   *
+   * @param address The address to send to.
+   */
+  public Sender(String address) {
+<span class="nc" id="L54">    this(getAddress(address));</span>
+<span class="nc" id="L55">  }</span>
+
+<span class="nc" id="L57">  @SneakyThrows</span>
+  private static InetAddress getAddress(String address) {
+<span class="nc" id="L59">    return InetAddress.getByName(address);</span>
+  }
+
+  /**
+   * Create a sender which sends to a DogStatD on port 8125 at the specified 
+   * address.  ThrottleInterval is one minute.
+   *
+   * @param address The address to send to.
+   */
+  public Sender(InetAddress address) {
+<span class="nc" id="L69">    this(new InetSocketAddress(address, 8125));</span>
+<span class="nc" id="L70">  }</span>
+
+  /**
+   * Create a sender which sends to a DogStatD on the specified port and address.
+   * ThrottleInterval is one minute.
+   * @param socket The address and port to send to.
+   */
+  public Sender(InetSocketAddress socket) {
+<span class="fc" id="L78">    this(socket, ONE_MINUTE);</span>
+<span class="fc" id="L79">  }</span>
+
+  /**
+   * Create a sender which sends to a DogStatD on the specified port and address.
+   * ThrottleInterval is specified in milliseconds.  If a message fails to be sent to the
+   * local agent, any messages during the throttleInterval will be dropped.  Additional
+   * messages will be attempted once the throttleInterval has expired.
+   *
+   * @param socket The address and port to send to.
+   * @param throttleInterval The number of milliseconds to ignore messages.
+   */
+<span class="pc" id="L90">  @SneakyThrows</span>
+<span class="fc" id="L91">  public Sender(InetSocketAddress socket, long throttleInterval) {</span>
+<span class="fc" id="L92">    clientChannel = DatagramChannel.open(getProtocol(socket.getAddress()));</span>
+<span class="fc" id="L93">    clientChannel.configureBlocking(false);</span>
+<span class="fc" id="L94">    clientChannel.setOption(StandardSocketOptions.SO_SNDBUF, MTU);</span>
+<span class="fc" id="L95">    clientChannel.connect(socket);</span>
+<span class="fc" id="L96">    this.throttleInterval = throttleInterval;</span>
+<span class="fc" id="L97">  }</span>
+
+  private ProtocolFamily getProtocol(InetAddress host) {
+<span class="pc bpc" id="L100" title="1 of 2 branches missed.">    if (host instanceof Inet4Address) {</span>
+<span class="fc" id="L101">      return StandardProtocolFamily.INET;</span>
+    }
+<span class="nc bnc" id="L103" title="All 2 branches missed.">    if (host instanceof Inet6Address) {</span>
+<span class="nc" id="L104">      return StandardProtocolFamily.INET6;</span>
+    }
+<span class="nc" id="L106">    throw new UnsupportedAddressTypeException();</span>
+  }
+
+  /**
+   * Send message to collector daemon.  Messages are checked for validity and will be dropped if too
+   * large or contain invalid values.  Message will also be dropped if this method is invoked within
+   * the throttleInterval.
+   *
+   * @param message The message to send.
+   * @return true, if message is valid and successfully queued for delivery; false, if message not
+   * sent due to improper message formatting, delivery failure, or the throttleInterval is still active.
+   */
+  public boolean send(Message message) {
+<span class="fc bfc" id="L119" title="All 2 branches covered.">    if (throttleEnd != 0) {</span>
+<span class="fc bfc" id="L120" title="All 2 branches covered.">      if (System.currentTimeMillis() &lt; throttleEnd) {</span>
+<span class="fc" id="L121">        return false;</span>
+      }
+<span class="fc" id="L123">      throttleEnd = 0;</span>
+    }
+
+<span class="fc bfc" id="L126" title="All 2 branches covered.">    if (!message.validate()) {</span>
+<span class="fc" id="L127">      return false;</span>
+    }
+
+<span class="fc" id="L130">    CharBuffer chars = CharBuffer.allocate(1400);</span>
+<span class="fc" id="L131">    chars.clear();</span>
+    try {
+<span class="fc" id="L133">      message.format(chars);</span>
+    }
+<span class="fc" id="L135">    catch(BufferOverflowException boe) {</span>
+<span class="fc" id="L136">      log.info(&quot;too large of message {}&quot;, message);</span>
+<span class="fc" id="L137">      return false;</span>
+<span class="fc" id="L138">    }</span>
+
+<span class="fc" id="L140">    chars.flip();</span>
+<span class="fc" id="L141">    ByteBuffer bytes = StandardCharsets.UTF_8.encode(chars);</span>
+
+    try {
+<span class="fc" id="L144">      clientChannel.write(bytes);</span>
+<span class="fc" id="L145">      return true;</span>
+<span class="fc" id="L146">    } catch (IOException pue) {</span>
+<span class="fc" id="L147">      throttleEnd = System.currentTimeMillis() + throttleInterval;</span>
+    }
+<span class="fc" id="L149">    log.warn(&quot;failed to send message {}&quot;, message);</span>
+<span class="fc" id="L150">    return false;</span>
+  }
+
+  void shutdown() throws IOException {
+<span class="fc" id="L154">    clientChannel.close();</span>
+<span class="fc" id="L155">  }</span>
+
+  boolean isThrottled() {
+<span class="fc bfc" id="L158" title="All 2 branches covered.">    return throttleEnd != 0;</span>
+  }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.7.201606060606</span></div></body></html>

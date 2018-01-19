@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Metric.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Dogstatd Client</a> &gt; <a href="index.source.html" class="el_package">org.honton.chas.dogstatd.model</a> &gt; <span class="el_source">Metric.java</span></div><h1>Metric.java</h1><pre class="source lang-java linenums">package org.honton.chas.dogstatd.model;
+
+import java.nio.CharBuffer;
+
+import lombok.NonNull;
+import lombok.ToString;
+import lombok.extern.slf4j.Slf4j;
+
+/**
+ * Represents a metric to be sent.  Use one of the subclasses to instantiate a Metric.
+ * 
+ * &lt;ul&gt;
+ * &lt;li&gt;metric.name should be a String with no colons, bars or @ characters and pass naming
+ * policy.&lt;/li&gt;
+ * &lt;li&gt;value should be a number&lt;/li&gt;
+ * &lt;li&gt;type should be c for Counter, g for Gauge, h for Histogram, or s for Set.&lt;/li&gt;
+ * &lt;li&gt;tags are optional, and should be a comma separated list of tags. Colons are used for key
+ * value tags. Note that the key device is reserved, tags like “device:xyc” will be dropped by
+ * Datadog.&lt;/li&gt;
+ * &lt;/ul&gt;
+ *
+ * @see Counter
+ * @see Gauge
+ * @see Histogram
+ * @see Set
+ */
+<span class="fc" id="L27">@Slf4j</span>
+<span class="nc" id="L28">@ToString</span>
+abstract class Metric&lt;T&gt; implements Message {
+  private final String name;
+  protected final T value;
+  private final char type;
+  private final String[] tags;
+
+  /*
+   * Use one of the subclasses to instantiate a Metric
+   *
+   * @param name The name of the metric.
+   * @param value The value of the metric.
+   * @param type Must be c for Counter, g for Gauge, h for Histogram, ms for Timer or s for Set.
+   * @param tags Any additional data about the value.
+   */
+<span class="fc bfc" id="L43" title="All 4 branches covered.">  Metric(@NonNull String name, @NonNull T value, char type, String... tags) {</span>
+<span class="fc" id="L44">    this.name = name;</span>
+<span class="fc" id="L45">    this.value = value;</span>
+<span class="fc" id="L46">    this.type = type;</span>
+<span class="fc" id="L47">    this.tags = tags;</span>
+<span class="fc" id="L48">  }</span>
+
+  /**
+   * Validate the message to be sent.
+   * &lt;ul&gt;
+   * &lt;li&gt;Use {@link Validator#nameIsValid(String)} to validate the metric name.&lt;/li&gt;
+   * &lt;li&gt;Use {@link Validator#tagIsValid(String)} to validate each tag.&lt;/li&gt;
+   * &lt;/ul&gt;
+   * @return true, if the message is valid and should be sent.
+   */
+  @Override
+  public boolean validate() {
+<span class="fc bfc" id="L60" title="All 2 branches covered.">    if (!Validator.nameIsValid(name)) {</span>
+<span class="fc" id="L61">      log.warn(&quot;invalid name '{}'&quot;, name);</span>
+<span class="fc" id="L62">      return false;</span>
+    }
+<span class="fc" id="L64">    return Tags.validate(log, tags);</span>
+  }
+
+  // metric.name:value|type|@sample_rate|#tag1:value,tag2
+  public void format(CharBuffer chars) {
+<span class="fc" id="L69">    chars.append(name).append(':').append(value.toString()).append('|').append(type);</span>
+<span class="fc" id="L70">    Tags.format(chars, tags);</span>
+<span class="fc" id="L71">    chars.append('\n');</span>
+<span class="fc" id="L72">  }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.7.201606060606</span></div></body></html>
