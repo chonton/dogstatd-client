@@ -1,7 +1,7 @@
-package org.honton.chas.dogstatd.model;
+package org.honton.chas.dogstatd.outside;
 
 import java.nio.CharBuffer;
-
+import org.honton.chas.dogstatd.model.Set;
 import org.junit.Assert;
 import org.junit.Test;
 

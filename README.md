@@ -1,8 +1,8 @@
 # dogstatd-client
 A java client to push UDP messages to a local [dogstatd](http://docs.datadoghq.com/guides/dogstatsd/).
 
-[Javadoc](https://chonton.github.io/dogstatd-client/0.0.2/apidocs/) and
-[build reports](https://chonton.github.io/dogstatd-client/0.0.2/project-reports) are available.
+[Javadoc](https://chonton.github.io/dogstatd-client/0.0.3/apidocs/) and
+[build reports](https://chonton.github.io/dogstatd-client/0.0.3/project-reports) are available.
 
 ### Requirements
 * Minimal latency in the mainline processing
@@ -21,7 +21,7 @@ To include dogstatd-client in your maven build, use the following fragment in yo
       <dependency>
         <groupId>org.honton.chas</groupId>
         <artifactId>dogstatd-client</artifactId>
-        <version>0.0.2</version>
+        <version>0.0.3</version>
       </dependency>
 ```
 
@@ -43,3 +43,10 @@ To include dogstatd-client in your maven build, use the following fragment in yo
   
   METRICS.send(new Event("title", "message", "tag1", "tag2"));
 ```
+
+## 0.2 to 0.3
+- Added public constructors for Event
+- Added public constructors for ServiceCheck
+- Metric changed to abstract
+- Tags changed to package protected
+- Validator changed to package protected

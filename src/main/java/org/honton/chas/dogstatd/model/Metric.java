@@ -7,26 +7,39 @@ import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * Represents a metric to be sent.
+ * Represents a metric to be sent.  Use one of the subclasses to instantiate a Metric.
  * 
  * <ul>
  * <li>metric.name should be a String with no colons, bars or @ characters and pass naming
  * policy.</li>
  * <li>value should be a number</li>
- * <li>type should be c for Counter, g for Gauge, h for Histogram, ms for Timer or s for Set.</li>
+ * <li>type should be c for Counter, g for Gauge, h for Histogram, or s for Set.</li>
  * <li>tags are optional, and should be a comma separated list of tags. Colons are used for key
  * value tags. Note that the key device is reserved, tags like “device:xyc” will be dropped by
  * Datadog.</li>
  * </ul>
+ *
+ * @see Counter
+ * @see Gauge
+ * @see Histogram
+ * @see Set
  */
 @Slf4j
 @ToString
-class Metric<T> implements Message {
+abstract class Metric<T> implements Message {
   private final String name;
   protected final T value;
   private final char type;
   private final String[] tags;
 
+  /*
+   * Use one of the subclasses to instantiate a Metric
+   *
+   * @param name The name of the metric.
+   * @param value The value of the metric.
+   * @param type Must be c for Counter, g for Gauge, h for Histogram, ms for Timer or s for Set.
+   * @param tags Any additional data about the value.
+   */
   Metric(@NonNull String name, @NonNull T value, char type, String... tags) {
     this.name = name;
     this.value = value;

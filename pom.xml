@@ -4,7 +4,7 @@
 
   <groupId>org.honton.chas</groupId>
   <artifactId>dogstatd-client</artifactId>
-  <version>0.0.2</version>
+  <version>0.0.3</version>
 
   <name>Dogstatd Client</name>
 
@@ -242,7 +242,7 @@
             <configuration>
               <message>Site documentation</message>
               <path>${project.version}</path>
-              <merge>true</merge>
+              <merge>false</merge>
               <server>github</server>
               <repositoryName>${project.artifactId}</repositoryName>
               <repositoryOwner>chonton</repositoryOwner>

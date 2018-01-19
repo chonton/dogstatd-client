@@ -7,7 +7,7 @@ import org.slf4j.Logger;
 /**
  * Tag routines
  */
-public final class Tags {
+final class Tags {
 
   private Tags() {}
 
@@ -17,7 +17,7 @@ public final class Tags {
    * @param tags The tags to validate
    * @return true, if all tags are valid
    */
-  public static boolean validate(Logger log, String... tags) {
+  static boolean validate(Logger log, String... tags) {
     for (String tag : tags) {
       if (!Validator.tagIsValid(tag)) {
         log.warn("invalid tag '{}'", tag);
@@ -32,7 +32,7 @@ public final class Tags {
    * @param chars The buffer to receive the formatted tags
    * @param tags The tags to format
    */
-  public static void format(CharBuffer chars, String... tags) {
+  static void format(CharBuffer chars, String... tags) {
     if (tags.length > 0) {
       String sep = "|#";
       for (String tag : tags) {

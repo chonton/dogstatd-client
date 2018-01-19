@@ -42,7 +42,7 @@ public class Event implements Message {
    * @param text The text about the event.
    * @param tags Any additional data about the value.
    */
-  Event(@NonNull String title, @NonNull String text, String... tags) {
+  public Event(@NonNull String title, @NonNull String text, String... tags) {
     this.title = title;
     this.text = text;
     this.tags = tags;

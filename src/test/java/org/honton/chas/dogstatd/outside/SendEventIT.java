@@ -1,5 +1,9 @@
-package org.honton.chas.dogstatd.model;
+package org.honton.chas.dogstatd.outside;
 
+import org.honton.chas.dogstatd.model.Event;
+import org.honton.chas.dogstatd.model.Gauge;
+import org.honton.chas.dogstatd.model.Sender;
+import org.honton.chas.dogstatd.model.ServiceCheck;
 import org.honton.chas.dogstatd.model.ServiceCheck.Status;
 import org.junit.Test;
 

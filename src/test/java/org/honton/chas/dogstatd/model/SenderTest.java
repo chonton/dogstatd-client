@@ -9,11 +9,14 @@ import java.nio.charset.StandardCharsets;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ForkJoinTask;
 import java.util.concurrent.TimeUnit;
-
+import lombok.SneakyThrows;
+import org.honton.chas.dogstatd.model.Event;
+import org.honton.chas.dogstatd.model.Gauge;
+import org.honton.chas.dogstatd.model.Sender;
+import org.honton.chas.dogstatd.model.ServiceCheck;
+import org.honton.chas.dogstatd.model.Set;
 import org.junit.Assert;
 import org.junit.Test;
-
-import lombok.SneakyThrows;
 
 public class SenderTest {
 

@@ -1,15 +1,14 @@
-package org.honton.chas.dogstatd.model;
+package org.honton.chas.dogstatd.outside;
 
 import java.io.IOException;
 import java.util.Random;
-
+import lombok.SneakyThrows;
+import org.honton.chas.dogstatd.model.Gauge;
+import org.honton.chas.dogstatd.model.Histogram;
+import org.honton.chas.dogstatd.model.Sender;
 import org.junit.Test;
 
-import lombok.SneakyThrows;
-
 public class SenderThreadIT {
-
-  static public final Sender METRICS = new Sender();
 
   private final Sender sender;
   private final Random random = new Random();

@@ -1,7 +1,7 @@
 package org.honton.chas.dogstatd.model;
 
 /**
- * A Gauge records a value of a at a particular time.
+ * A Gauge records a value of a metric at a particular time.
  */
 public class Gauge extends Metric<Number> {
 

@@ -6,11 +6,11 @@ public class MetricTest {
 
   @Test(expected = NullPointerException.class)
   public void testNameNull() {
-    new Metric<String>(null, "value", 'x');
+    new Metric<String>(null, "value", 'x') {};
   }
 
   @Test(expected = NullPointerException.class)
   public void testValueNull() {
-    new Metric<String>("name", null, 'x');
+    new Metric<String>("name", null, 'x') {};
   }
 }

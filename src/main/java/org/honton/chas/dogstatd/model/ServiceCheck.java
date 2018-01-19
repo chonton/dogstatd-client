@@ -34,7 +34,7 @@ public class ServiceCheck implements Message {
    * @param value The status.
    * @param tags Any additional data about the status.
    */
-  ServiceCheck(@NonNull String name, @NonNull Status value, String... tags) {
+  public ServiceCheck(@NonNull String name, @NonNull Status value, String... tags) {
     this.name = name;
     this.value = value;
     this.tags = tags;
