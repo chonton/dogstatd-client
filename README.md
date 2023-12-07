@@ -1,3 +1,5 @@
+# UP FOR ADOPTION
+
 # dogstatd-client
 A java client to push UDP messages to a local [dogstatd](http://docs.datadoghq.com/guides/dogstatsd/).
 
